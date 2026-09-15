@@ -7,9 +7,6 @@ on:
 
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 jobs:
   build-apk:
 
@@ -42,22 +39,14 @@ jobs:
 
 
       # ----------------------------------------------------------
-      # 4. Create .env file from the single GitHub Secret
-      # ----------------------------------------------------------
-      - name: Create .env file
-        run: |
-          echo "${{ secrets.FIREBASE_ENV }}" > .env
-
-
-      # ----------------------------------------------------------
-      # 5. Build Ionic/Vue application
+      # 4. Build Ionic/Vue application
       # ----------------------------------------------------------
       - name: Build Ionic application
         run: npm run build
 
 
       # ----------------------------------------------------------
-      # 6. Install Java 21
+      # 5. Install Java 21
       # ----------------------------------------------------------
       - name: Set up Java 21
         uses: actions/setup-java@v4
@@ -67,7 +56,7 @@ jobs:
 
 
       # ----------------------------------------------------------
-      # 7. Confirm Java version
+      # 6. Confirm Java version
       # ----------------------------------------------------------
       - name: Check Java version
         run: |
@@ -77,21 +66,21 @@ jobs:
 
 
       # ----------------------------------------------------------
-      # 8. Synchronize Capacitor with Android
+      # 7. Synchronize Capacitor with Android
       # ----------------------------------------------------------
       - name: Sync Capacitor Android
         run: npx cap sync android
 
 
       # ----------------------------------------------------------
-      # 9. Give Gradle execution permission
+      # 8. Give Gradle execution permission
       # ----------------------------------------------------------
       - name: Make Gradle executable
         run: chmod +x android/gradlew
 
 
       # ----------------------------------------------------------
-      # 10. Check Gradle environment
+      # 9. Check Gradle environment
       # ----------------------------------------------------------
       - name: Check Gradle version
         working-directory: android
@@ -99,48 +88,23 @@ jobs:
 
 
       # ----------------------------------------------------------
-      # 11. Build RELEASE APK
+      # 10. Build debug APK
       # ----------------------------------------------------------
       - name: Build Android APK
         working-directory: android
-        run: ./gradlew assembleRelease
+        run: ./gradlew assembleDebug
 
 
       # ----------------------------------------------------------
-      # 12. Find generated APK
+      # 11. Rename the generated APK
       # ----------------------------------------------------------
-      - name: Find APK
+      - name: simple-inventory-system.apk
         run: |
-          echo "Searching for generated APK..."
-          find android -type f -name "*.apk"
+          cp android/app/build/outputs/apk/debug/app-debug.apk Simple-Inventory-System.apk
 
 
       # ----------------------------------------------------------
-      # 13. Rename generated APK
-      # ----------------------------------------------------------
-      - name: Rename APK
-        run: |
-          APK_PATH=$(find android/app/build/outputs -type f -name "*.apk" | head -n 1)
-
-          if [ -z "$APK_PATH" ]; then
-            echo "ERROR: APK file was not found."
-            exit 1
-          fi
-
-          echo "Found APK: $APK_PATH"
-          cp "$APK_PATH" Simple-Inventory-System.apk
-
-
-      # ----------------------------------------------------------
-      # 14. Check final APK
-      # ----------------------------------------------------------
-      - name: Check final APK
-        run: |
-          ls -lh Simple-Inventory-System.apk
-
-
-      # ----------------------------------------------------------
-      # 15. Upload APK to GitHub Actions
+      # 12. Upload APK to GitHub Actions
       # ----------------------------------------------------------
       - name: Upload APK
         uses: actions/upload-artifact@v4
@@ -149,15 +113,3 @@ jobs:
           path: Simple-Inventory-System.apk
           if-no-files-found: error
           retention-days: 30
-
-
-      # ----------------------------------------------------------
-      # 16. Create GitHub Release
-      # ----------------------------------------------------------
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v${{ github.run_number }}
-          name: Simple Inventory System v${{ github.run_number }}
-          files: Simple-Inventory-System.apk
-          generate_release_notes: true
