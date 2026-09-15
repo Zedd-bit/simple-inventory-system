@@ -1,0 +1,7 @@
+{
+  "name": "simple-inventory-system",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "vue-vite"
+}
