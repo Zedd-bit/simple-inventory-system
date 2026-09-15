@@ -45,7 +45,8 @@ jobs:
       # 4. Create .env file from the single GitHub Secret
       # ----------------------------------------------------------
       - name: Create .env file
-        run: echo "${{ secrets.FIREBASE_ENV }}" > .env
+        run: |
+          echo "${{ secrets.FIREBASE_ENV }}" > .env
 
 
       # ----------------------------------------------------------
@@ -98,11 +99,11 @@ jobs:
 
 
       # ----------------------------------------------------------
-      # 11. Build debug APK
+      # 11. Build RELEASE APK
       # ----------------------------------------------------------
       - name: Build Android APK
         working-directory: android
-        run: ./gradlew assembleDebug
+        run: ./gradlew assembleRelease
 
 
       # ----------------------------------------------------------
@@ -110,7 +111,7 @@ jobs:
       # ----------------------------------------------------------
       - name: Rename APK
         run: |
-          cp android/app/build/outputs/apk/debug/app-debug.apk Simple-Inventory-System.apk
+          cp android/app/build/outputs/apk/release/app-release.apk Simple-Inventory-System.apk
 
 
       # ----------------------------------------------------------
