@@ -7,9 +7,6 @@ on:
 
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 jobs:
   build-apk:
 
@@ -35,7 +32,7 @@ jobs:
         run: npm ci
 
 
-      # 4. Create .env file from GitHub Secret
+      # 4. Create .env file from the single GitHub Secret
       - name: Create .env file
         run: echo "${{ secrets.FIREBASE_ENV }}" > .env
 
@@ -73,7 +70,7 @@ jobs:
 
       # 10. Check Gradle environment
       - name: Check Gradle version
-        working-directory: android
+      - working-directory: android
         run: ./gradlew --version
 
 
@@ -83,7 +80,7 @@ jobs:
         run: ./gradlew assembleDebug
 
 
-      # 12. Rename generated APK
+      # 12. Rename the generated APK
       - name: Rename APK
         run: |
           cp android/app/build/outputs/apk/debug/app-debug.apk Simple-Inventory-System.apk
