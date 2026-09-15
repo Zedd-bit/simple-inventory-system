@@ -100,10 +100,10 @@ jobs:
 
 
       # 14. Create GitHub Release
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v${{ github.run_number }}
-          name: Simple Inventory System v${{ github.run_number }}
-          files: Simple-Inventory-System.apk
-          generate_release_notes: true
+     - name: Upload APK
+       uses: actions/upload-artifact@v4
+       with:
+       name: Simple-Inventory-System-APK
+       path: Simple-Inventory-System.apk
+       if-no-files-found: error
+       retention-days: 30
