@@ -107,15 +107,40 @@ jobs:
 
 
       # ----------------------------------------------------------
-      # 12. Rename the generated APK
+      # 12. Find generated APK
+      # ----------------------------------------------------------
+      - name: Find APK
+        run: |
+          echo "Searching for generated APK..."
+          find android -type f -name "*.apk"
+
+
+      # ----------------------------------------------------------
+      # 13. Rename generated APK
       # ----------------------------------------------------------
       - name: Rename APK
         run: |
-          cp android/app/build/outputs/apk/release/app-release.apk Simple-Inventory-System.apk
+          APK_PATH=$(find android/app/build/outputs -type f -name "*.apk" | head -n 1)
+
+          if [ -z "$APK_PATH" ]; then
+            echo "ERROR: APK file was not found."
+            exit 1
+          fi
+
+          echo "Found APK: $APK_PATH"
+          cp "$APK_PATH" Simple-Inventory-System.apk
 
 
       # ----------------------------------------------------------
-      # 13. Upload APK to GitHub Actions
+      # 14. Check final APK
+      # ----------------------------------------------------------
+      - name: Check final APK
+        run: |
+          ls -lh Simple-Inventory-System.apk
+
+
+      # ----------------------------------------------------------
+      # 15. Upload APK to GitHub Actions
       # ----------------------------------------------------------
       - name: Upload APK
         uses: actions/upload-artifact@v4
@@ -127,7 +152,7 @@ jobs:
 
 
       # ----------------------------------------------------------
-      # 14. Create GitHub Release
+      # 16. Create GitHub Release
       # ----------------------------------------------------------
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
