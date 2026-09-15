@@ -1,50 +1,109 @@
-name: Build Android APK
+name: Build Ionic Android APK
 
 on:
   push:
     branches:
       - main
+
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
-  build:
+  build-apk:
+
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+
+      # 1. Get the source code
+      - name: Checkout project
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+
+      # 2. Install Node.js
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
-          cache: npm
+          node-version: '22'
+          cache: 'npm'
 
-      - name: Install dependencies
+
+      # 3. Install project dependencies
+      - name: Install npm dependencies
         run: npm ci
 
-      - name: Build Ionic app
+
+      # 4. Create .env file from GitHub Secret
+      - name: Create .env file
+        run: echo "${{ secrets.FIREBASE_ENV }}" > .env
+
+
+      # 5. Build Ionic/Vue application
+      - name: Build Ionic application
         run: npm run build
 
-      - name: Sync Capacitor
-        run: npx cap sync android
 
-      - name: Setup Java
+      # 6. Install Java 21
+      - name: Set up Java 21
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
-          java-version: 21
+          distribution: 'temurin'
+          java-version: '21'
 
+
+      # 7. Confirm Java version
+      - name: Check Java version
+        run: |
+          java -version
+          javac -version
+          echo "JAVA_HOME=$JAVA_HOME"
+
+
+      # 8. Synchronize Capacitor with Android
+      - name: Sync Capacitor Android
+        run: npx cap sync android
+
+
+      # 9. Give Gradle execution permission
       - name: Make Gradle executable
-        working-directory: android
-        run: chmod +x gradlew
+        run: chmod +x android/gradlew
 
-      - name: Build APK
+
+      # 10. Check Gradle environment
+      - name: Check Gradle version
+        working-directory: android
+        run: ./gradlew --version
+
+
+      # 11. Build debug APK
+      - name: Build Android APK
         working-directory: android
         run: ./gradlew assembleDebug
 
+
+      # 12. Rename generated APK
+      - name: Rename APK
+        run: |
+          cp android/app/build/outputs/apk/debug/app-debug.apk Simple-Inventory-System.apk
+
+
+      # 13. Upload APK to GitHub Actions
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: simple-inventory-system-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: Simple-Inventory-System-APK
+          path: Simple-Inventory-System.apk
+          if-no-files-found: error
+          retention-days: 30
+
+
+      # 14. Create GitHub Release
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ github.run_number }}
+          name: Simple Inventory System v${{ github.run_number }}
+          files: Simple-Inventory-System.apk
+          generate_release_notes: true
